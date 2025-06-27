@@ -12,7 +12,7 @@ from pathlib import Path
 from database import SessionLocal, engine
 from models import Base, User, UserRole
 from auth import authenticate_user, create_access_token, get_current_user
-from routers import auth, users, time_entries, statistics
+from routers import auth, users, time_entries, statistics, child_counts, monthly_locks, global_events, export_import, push_notifications
 
 Base.metadata.create_all(bind=engine)
 
@@ -41,6 +41,11 @@ app.include_router(auth.router, prefix="/api/auth", tags=["auth"])
 app.include_router(users.router, prefix="/api/users", tags=["users"])
 app.include_router(time_entries.router, prefix="/api/time-entries", tags=["time-entries"])
 app.include_router(statistics.router, prefix="/api/statistics", tags=["statistics"])
+app.include_router(child_counts.router, prefix="/api/child-counts", tags=["child-counts"])
+app.include_router(monthly_locks.router, prefix="/api/monthly-locks", tags=["monthly-locks"])
+app.include_router(global_events.router, prefix="/api/global-events", tags=["global-events"])
+app.include_router(export_import.router, prefix="/api/export-import", tags=["export-import"])
+app.include_router(push_notifications.router, prefix="/api/push", tags=["push-notifications"])
 
 @app.get("/api/health")
 async def health_check():

@@ -1,25 +1,46 @@
-# Kita Dienstplan - Client/Server Docker-Compose Anwendung
+# Kita Dienstplan - Frontend (React TypeScript PWA)
 
-Eine vollständige Dienstplan-Anwendung für Kindertagesstätten mit Python FastAPI Backend und React TypeScript Frontend.
+Eine vollständige Progressive Web App für die Zeiterfassung und Verwaltung in Kindertagesstätten.
 
-## Funktionen
+## ✅ Implementierte Features
 
-### Benutzerrollen
+### 🔐 Benutzerrollen & Sicherheit
 - **Fachkraft**: Eigene Zeiterfassung und Statistiken
 - **Leitung**: Alle Zeiterfassungen und Statistiken einsehen
 - **Admin**: Vollzugriff inkl. Benutzerverwaltung
+- JWT-Authentifizierung mit automatischem Token-Refresh
 
-### Zeiterfassung
-- Arbeitszeit (Stunden am Kind, Vorbereitungszeit, Meetings, etc.)
-- Krankheit, Kindkrankheit, Urlaub, Bildungsurlaub
-- Hospitation und Praktikum
-- Kinderanzahl-Erfassung je Zeitslot
+### ⏰ Zeiterfassung
+- **Arbeitszeit** mit automatischer Vorbereitungszeit-Berechnung (Faktor 0,5)
+- **Alle Erfassungsarten**: Stunden am Kind, Vorbereitung, Meetings, Leitung, etc.
+- **Abwesenheiten**: Krankheit, Kindkrankheit, Urlaub, Bildungsurlaub (Tage/halbe Tage)
+- **Sonderzeiten**: Hospitation, Praktikum, Fortbildung
+- **Kalenderansicht** für intuitive Erfassung und Übersicht
 
-### Auswertungen
-- Wochen-/Monatsstatistiken
-- Überstunden-Berechnung
-- Fachkraft-Kind-Schlüssel
-- Jahresstatistiken pro Mitarbeiter
+### 👶 Kinderanzahl-Erfassung
+- **Zeitslot-basierte Erfassung** (30-Min-Slots von 8:00-16:00)
+- **Altersgruppen**: Unter 3 Jahre / Über 3 Jahre
+- **Automatische Bedarfsberechnung** (Fachkraft-Kind-Schlüssel)
+- **Personalbedarf-Anzeige** in Echtzeit
+
+### 📊 Statistiken & Auswertungen
+- **Wochen-/Monatsstatistiken** mit Überstunden-Berechnung
+- **Jahresübersichten** pro Mitarbeiter
+- **Fachkraft-Kind-Schlüssel** Berechnungen und Vergleiche
+- **Rollenbasierte Filterung** und Datenansicht
+- **Export-Funktionen** für CSV/Excel
+
+### 🔒 Monatsabschluss
+- **Sperrfunktion** für abgeschlossene Monate
+- **Bulk-Operationen** für mehrere Mitarbeiter
+- **E-Mail-Benachrichtigungen** mit HTML-Templates
+- **Push-Benachrichtigungen** für mobile Geräte
+
+### 👥 Benutzerverwaltung
+- **Vollständige CRUD-Operationen** für Benutzer
+- **Schnellkonfiguration** mit vorgefertigten Rollen-Templates
+- **Arbeitszeit-Konfiguration** pro Mitarbeiter
+- **Rollenbasierte Berechtigungen**
 
 ## Technologie-Stack
 
@@ -29,13 +50,18 @@ Eine vollständige Dienstplan-Anwendung für Kindertagesstätten mit Python Fast
 - **JWT** Authentifizierung
 - **Pydantic** für Datenvalidierung
 
-### Frontend
-- **React 18** mit TypeScript
-- **Vite** als Build-Tool
-- **TailwindCSS** für Styling
-- **React Query** für API-Calls
-- **React Router** für Navigation
-- **PWA** Support für mobile Installation
+### Frontend (PWA)
+- **React 18** mit TypeScript für moderne UI-Entwicklung
+- **Vite** als Build-Tool mit Hot Module Replacement
+- **TailwindCSS** für responsive, mobile-first Design
+- **React Query** für optimiertes API-Caching und State Management
+- **React Router** für SPA-Navigation mit Future Flags
+- **Progressive Web App (PWA)** Features:
+  - Service Worker für Offline-Funktionalität
+  - App-Installation auf Desktop und Mobile
+  - Push-Benachrichtigungen mit VAPID
+  - Background Sync für Offline-Aktionen
+  - App-Icons und Splash Screens
 
 ### Infrastruktur
 - **Docker Compose** für lokale Entwicklung
@@ -153,13 +179,39 @@ docker-compose exec backend alembic revision --autogenerate -m "Beschreibung"
 docker-compose exec backend alembic upgrade head
 ```
 
-## Mobile Optimierung
+## 📱 Progressive Web App (PWA)
 
-Die Anwendung ist für mobile Nutzung optimiert:
-- Responsive Design mit TailwindCSS
-- Touch-freundliche Bedienelemente
-- PWA Support für App-Installation
-- Offline-Funktionalität (geplant)
+Die Anwendung ist eine vollständige PWA mit Enterprise-Features:
+
+### ✅ Mobile Optimierung
+- **Responsive Design** mit TailwindCSS für alle Bildschirmgrößen
+- **Touch-optimierte** Bedienelemente (80% Smartphone-Nutzung)
+- **Viewport-optimiert** mit Safe Area Support für Notch-Geräte
+- **Mobile-First** Entwicklungsansatz
+
+### ✅ App-Installation
+- **"Add to Home Screen"** auf iOS und Android
+- **Desktop-Installation** über Chrome/Edge
+- **Native App-Erlebnis** mit eigenem Icon und Fenster
+- **App-Shortcuts** für Schnellzugriff auf Hauptfeatures
+
+### ✅ Offline-Funktionalität
+- **Service Worker** mit Cache-First-Strategie für API-Daten
+- **Background Sync** für Offline-Aktionen (automatische Synchronisation)
+- **Offline-Indikator** mit Benutzerfeedback
+- **Cache-Management** für optimale Performance
+
+### ✅ Push-Benachrichtigungen
+- **VAPID-basierte** Web Push Notifications
+- **Automatische Benachrichtigungen** bei Monatsabschluss
+- **Erinnerungen** vor wichtigen Deadlines
+- **Cross-Platform** Support (Desktop, Android, iOS)
+
+### ✅ PWA-Standards
+- **Web App Manifest** mit korrekten Meta-Daten
+- **Service Worker** für Offline-Support
+- **HTTPS-Ready** für Production
+- **Lighthouse-optimiert** für beste Performance
 
 ## Sicherheit
 

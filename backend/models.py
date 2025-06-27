@@ -67,12 +67,29 @@ class TimeEntry(Base):
     # Für Tageserfassung (Urlaub, Krankheit etc.)
     days = Column(Float, default=0.0)  # 0.5 für halbe Tage, 1.0 für ganze Tage
     
+    # Automatische Vorbereitungszeit-Berechnung
+    prep_time_hours = Column(Float, default=0.0)  # Automatisch berechnete Vorbereitungszeit
+    
     description = Column(Text, nullable=True)
     is_locked = Column(Boolean, default=False)  # Gesperrt nach Monatsabschluss
     created_at = Column(DateTime, default=func.now())
     updated_at = Column(DateTime, default=func.now(), onupdate=func.now())
     
     user = relationship("User", back_populates="time_entries")
+    
+    @property
+    def total_hours(self):
+        """Gesamtstunden inklusive automatischer Vorbereitungszeit"""
+        return self.hours + self.prep_time_hours
+    
+    def calculate_prep_time(self):
+        """Berechnet automatische Vorbereitungszeit (Faktor 0,5 für Stunden am Kind)"""
+        if (self.entry_type == TimeEntryType.ARBEITSZEIT and 
+            self.subtype == WorkTimeSubtype.STUNDEN_AM_KIND and 
+            self.hours > 0):
+            self.prep_time_hours = round(self.hours * 0.5, 2)
+        else:
+            self.prep_time_hours = 0.0
 
 class ChildCount(Base):
     __tablename__ = "child_counts"

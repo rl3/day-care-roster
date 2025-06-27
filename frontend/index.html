@@ -2,13 +2,160 @@
 <html lang="de">
   <head>
     <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta name="theme-color" content="#ffffff" />
-    <title>Kita Dienstplan</title>
+    
+    <!-- Viewport and PWA Meta Tags -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=no" />
+    
+    <!-- App Title and Description -->
+    <title>Kita Dienstplan - Zeiterfassung & Verwaltung</title>
+    <meta name="description" content="Mobile App für Zeiterfassung, Dienstpläne und Verwaltung in Kindertagesstätten. Offline-fähig mit Push-Benachrichtigungen." />
+    <meta name="keywords" content="Kita, Dienstplan, Zeiterfassung, Verwaltung, PWA, Offline" />
+    <meta name="author" content="Kita Dienstplan Team" />
+    
+    <!-- PWA Theme Colors -->
+    <meta name="theme-color" content="#667eea" />
+    <meta name="msapplication-navbutton-color" content="#667eea" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+    
+    <!-- PWA App Manifest -->
+    <link rel="manifest" href="/manifest.json" />
+    
+    <!-- Favicon and Icons -->
+    <link rel="icon" type="image/svg+xml" href="/icons/icon.svg" />
+    
+    <!-- iOS PWA Meta Tags -->
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-title" content="Kita Plan" />
+    <meta name="apple-touch-fullscreen" content="yes" />
+    
+    <!-- Android PWA Meta Tags -->
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="application-name" content="Kita Dienstplan" />
+    
+    <!-- Windows/IE Meta Tags -->
+    <meta name="msapplication-TileColor" content="#667eea" />
+    
+    <!-- Open Graph / Social Media -->
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="Kita Dienstplan - Zeiterfassung & Verwaltung" />
+    <meta property="og:description" content="Mobile App für Zeiterfassung, Dienstpläne und Verwaltung in Kindertagesstätten" />
+    <meta property="og:image" content="/icons/icon.svg" />
+    <meta property="og:url" content="/" />
+    <meta property="og:site_name" content="Kita Dienstplan" />
+    
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="Kita Dienstplan" />
+    <meta name="twitter:description" content="Mobile App für Zeiterfassung, Dienstpläne und Verwaltung in Kindertagesstätten" />
+    <meta name="twitter:image" content="/icons/icon.svg" />
+    
+    
+    <!-- PWA Splash Screen Styles -->
+    <style>
+      /* PWA Loading Screen */
+      .pwa-loading {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 9999;
+        opacity: 1;
+        transition: opacity 0.5s ease-out;
+      }
+      
+      .pwa-loading.fade-out {
+        opacity: 0;
+        pointer-events: none;
+      }
+      
+      .pwa-loading-content {
+        text-align: center;
+        color: white;
+      }
+      
+      .pwa-loading-icon {
+        width: 80px;
+        height: 80px;
+        margin: 0 auto 20px;
+        background: rgba(255, 255, 255, 0.2);
+        border-radius: 20px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        animation: pulse 2s infinite;
+      }
+      
+      @keyframes pulse {
+        0%, 100% { transform: scale(1); opacity: 1; }
+        50% { transform: scale(1.05); opacity: 0.8; }
+      }
+      
+      /* Safe Area Support */
+      body {
+        padding-top: env(safe-area-inset-top);
+        padding-bottom: env(safe-area-inset-bottom);
+        padding-left: env(safe-area-inset-left);
+        padding-right: env(safe-area-inset-right);
+      }
+      
+      /* Prevent zoom on iOS */
+      input, select, textarea {
+        font-size: 16px;
+      }
+      
+      /* PWA Display Mode Styles */
+      @media (display-mode: standalone) {
+        body {
+          user-select: none;
+          -webkit-user-select: none;
+          -webkit-touch-callout: none;
+          -webkit-tap-highlight-color: transparent;
+        }
+      }
+    </style>
   </head>
   <body>
+    <!-- PWA Initial Loading Screen -->
+    <div id="pwa-loading" class="pwa-loading">
+      <div class="pwa-loading-content">
+        <div class="pwa-loading-icon">
+          <svg width="40" height="40" viewBox="0 0 512 512" fill="currentColor">
+            <rect x="80" y="200" width="352" height="200" rx="20" fill="currentColor" opacity="0.9"/>
+            <polygon points="256,150 130,220 382,220" fill="currentColor" opacity="0.9"/>
+            <rect x="220" y="280" width="72" height="120" rx="36" fill="currentColor" opacity="0.7"/>
+            <circle cx="270" cy="330" r="6" fill="currentColor"/>
+          </svg>
+        </div>
+        <h1 style="font-size: 24px; margin: 0 0 10px 0; font-weight: bold;">Kita Dienstplan</h1>
+        <p style="margin: 0; opacity: 0.8;">Wird geladen...</p>
+      </div>
+    </div>
+    
+    <!-- Main App Root -->
     <div id="root"></div>
+    
+    <!-- PWA Loading Screen Script -->
+    <script>
+      // Hide Loading Screen when App loads - nur die Loading-Animation
+      window.addEventListener('DOMContentLoaded', () => {
+        setTimeout(() => {
+          const loading = document.getElementById('pwa-loading');
+          if (loading) {
+            loading.classList.add('fade-out');
+            setTimeout(() => {
+              loading.style.display = 'none';
+            }, 500);
+          }
+        }, 1500); // Etwas länger warten für React-App
+      });
+    </script>
+    
+    <!-- Main App Script -->
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>

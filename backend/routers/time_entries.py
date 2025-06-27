@@ -23,6 +23,8 @@ class TimeEntryResponse(TimeEntryBase):
     id: int
     user_id: int
     is_locked: bool
+    prep_time_hours: float = 0.0
+    total_hours: float = 0.0
     
     class Config:
         from_attributes = True
@@ -79,6 +81,9 @@ async def create_time_entry(
         description=entry.description
     )
     
+    # Automatische Vorbereitungszeit berechnen
+    db_entry.calculate_prep_time()
+    
     db.add(db_entry)
     db.commit()
     db.refresh(db_entry)
@@ -109,6 +114,9 @@ async def update_time_entry(
     db_entry.hours = entry.hours
     db_entry.days = entry.days
     db_entry.description = entry.description
+    
+    # Automatische Vorbereitungszeit neu berechnen
+    db_entry.calculate_prep_time()
     
     db.commit()
     db.refresh(db_entry)
