@@ -1,0 +1,59 @@
+# Development files
+node_modules
+.git
+.gitignore
+README.md
+Dockerfile
+docker-compose.yml
+docker-compose.dev.yml
+
+# Frontend development
+frontend/node_modules
+frontend/.env
+frontend/dist
+frontend/coverage
+
+# Backend development
+backend/__pycache__
+backend/.pytest_cache
+backend/.coverage
+backend/*.pyc
+backend/*.pyo
+backend/*.pyd
+backend/.Python
+backend/venv
+backend/.venv
+
+# IDE files
+.vscode
+.idea
+*.swp
+*.swo
+*~
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+logs
+
+# Database
+*.db
+*.sqlite3
+
+# SSL certificates (sollten über volumes gemountet werden)
+ssl/*.key
+ssl/*.crt
+
+# Environment files
+.env
+.env.local
+.env.development
+.env.test
+.env.production
+
+# Backup files
+*.sql
+backup_*

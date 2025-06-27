@@ -1,0 +1,56 @@
+version: '3.8'
+
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile.prod
+    ports:
+      - "8000:8000"
+    environment:
+      - DATABASE_URL=mysql+pymysql://kita_user:${MYSQL_PASSWORD:-kita_password}@db:3306/kita_dienstplan
+      - SECRET_KEY=${SECRET_KEY:-change-this-in-production-please}
+      - CORS_ORIGINS=${CORS_ORIGINS:-http://localhost:8000}
+    depends_on:
+      db:
+        condition: service_healthy
+    restart: unless-stopped
+    volumes:
+      - ./data/uploads:/app/uploads
+
+  db:
+    image: mysql:8.0
+    environment:
+      - MYSQL_DATABASE=kita_dienstplan
+      - MYSQL_USER=kita_user
+      - MYSQL_PASSWORD=${MYSQL_PASSWORD:-kita_password}
+      - MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD:-root_password}
+    volumes:
+      - mysql_data:/var/lib/mysql
+      - ./mysql-init:/docker-entrypoint-initdb.d
+    ports:
+      - "3306:3306"
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      timeout: 20s
+      retries: 10
+      interval: 10s
+      start_period: 40s
+
+  # Optional: Nginx Reverse Proxy für HTTPS
+  nginx:
+    image: nginx:alpine
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./ssl:/etc/nginx/ssl:ro
+    depends_on:
+      - app
+    restart: unless-stopped
+    profiles: ["with-nginx"]
+
+volumes:
+  mysql_data:
