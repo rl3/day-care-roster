@@ -1,13 +1,14 @@
 import React, { useState } from 'react'
-import { useQuery } from '@tanstack/react-query'
+import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { usersAPI } from '../services/api'
 import { User } from '../types'
-import { Users, Edit2, Clock, Calendar, Mail, Shield } from 'lucide-react'
+import { Users, Edit2, Clock, Calendar, Mail, Shield, Trash2 } from 'lucide-react'
 import UserForm from './UserForm'
 
 const UserList: React.FC = () => {
   const [showForm, setShowForm] = useState(false)
   const [editingUser, setEditingUser] = useState<User | null>(null)
+  const queryClient = useQueryClient()
 
   const { data: users = [], isLoading, error } = useQuery({
     queryKey: ['users'],
@@ -40,6 +41,17 @@ const UserList: React.FC = () => {
   const handleFormSuccess = () => {
     setShowForm(false)
     setEditingUser(null)
+  }
+
+  const handleDelete = async (user: User) => {
+    if (window.confirm(`Möchten Sie den Benutzer "${user.full_name}" wirklich löschen?`)) {
+      try {
+        await usersAPI.deleteUser(user.id)
+        queryClient.invalidateQueries({ queryKey: ['users'] })
+      } catch (error) {
+        alert('Fehler beim Löschen des Benutzers: ' + (error as any)?.response?.data?.detail || 'Unbekannter Fehler')
+      }
+    }
   }
 
   if (showForm) {
@@ -128,6 +140,14 @@ const UserList: React.FC = () => {
                     title="Bearbeiten"
                   >
                     <Edit2 className="h-4 w-4" />
+                  </button>
+                  
+                  <button
+                    onClick={() => handleDelete(user)}
+                    className="p-1 text-gray-400 hover:text-red-600 transition-colors"
+                    title="Löschen"
+                  >
+                    <Trash2 className="h-4 w-4" />
                   </button>
                 </div>
               </div>

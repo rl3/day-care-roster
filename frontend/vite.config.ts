@@ -6,6 +6,10 @@ export default defineConfig({
     react()
     // VitePWA Plugin deaktiviert - wir verwenden unseren eigenen Service Worker
   ],
+  esbuild: {
+    // TypeScript Warnungen als nicht-fatal behandeln für Production Build
+    logOverride: { 'this-is-undefined-in-esm': 'silent' }
+  },
   server: {
     host: '0.0.0.0',
     port: 3000,

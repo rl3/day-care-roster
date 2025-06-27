@@ -63,6 +63,10 @@ export const usersAPI = {
     const response = await api.post('/users/', userData)
     return response.data
   },
+  
+  deleteUser: async (userId: number): Promise<void> => {
+    await api.delete(`/users/${userId}`)
+  },
 }
 
 export const timeEntriesAPI = {

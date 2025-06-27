@@ -111,41 +111,8 @@ fi
 log_info "Warte auf Datenbankverbindung..."
 sleep 10
 
-# Initial Setup (Admin User)
-log_info "Erstelle initiale Datenbank und Admin User..."
-docker-compose -f docker-compose.prod.yml exec app python -c "
-from database import SessionLocal, engine
-from models import Base, User, UserRole
-from auth import get_password_hash
-
-Base.metadata.create_all(bind=engine)
-
-db = SessionLocal()
-try:
-    existing_admin = db.query(User).filter(User.username == 'admin').first()
-    if not existing_admin:
-        admin_user = User(
-            username='admin',
-            email='admin@kita.de',
-            hashed_password=get_password_hash('admin123'),
-            full_name='Administrator',
-            role=UserRole.ADMIN,
-            weekly_hours=40,
-            additional_hours=0,
-            work_days_per_week=5,
-            vacation_days_per_year=30
-        )
-        db.add(admin_user)
-        db.commit()
-        print('✅ Admin-Benutzer erstellt: admin / admin123')
-    else:
-        print('✅ Admin-Benutzer existiert bereits')
-except Exception as e:
-    print(f'❌ Fehler: {e}')
-    db.rollback()
-finally:
-    db.close()
-"
+# Initial Setup wird automatisch beim App-Start durchgeführt
+log_info "Datenbank wird automatisch beim App-Start initialisiert..."
 
 # Status prüfen
 log_info "Prüfe Container Status..."

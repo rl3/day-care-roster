@@ -11,12 +11,84 @@ from pathlib import Path
 
 from database import SessionLocal, engine
 from models import Base, User, UserRole
-from auth import authenticate_user, create_access_token, get_current_user
+from auth import authenticate_user, create_access_token, get_current_user, get_password_hash
 from routers import auth, users, time_entries, statistics, child_counts, monthly_locks, global_events, export_import, push_notifications
+import time
+import logging
 
-Base.metadata.create_all(bind=engine)
+logger = logging.getLogger(__name__)
+
+def init_database():
+    """Initialize database tables and create default users if needed"""
+    max_retries = 30
+    retry_count = 0
+    
+    while retry_count < max_retries:
+        try:
+            # Try to create tables
+            Base.metadata.create_all(bind=engine)
+            logger.info("Database tables created successfully")
+            
+            # Create default admin user if not exists
+            db = SessionLocal()
+            try:
+                admin_user = db.query(User).filter(User.username == "admin").first()
+                if not admin_user:
+                    admin_user = User(
+                        username="admin",
+                        email="admin@kita.de",
+                        hashed_password=get_password_hash("admin123"),
+                        full_name="Administrator",
+                        role=UserRole.ADMIN,
+                        weekly_hours=40,
+                        additional_hours=0,
+                        work_days_per_week=5,
+                        vacation_days_per_year=30
+                    )
+                    db.add(admin_user)
+                    db.commit()
+                    logger.info("Default admin user created: admin / admin123")
+                else:
+                    logger.info("Admin user already exists")
+                    
+                # Create default leitung user if not exists
+                leitung_user = db.query(User).filter(User.username == "leitung").first()
+                if not leitung_user:
+                    leitung_user = User(
+                        username="leitung",
+                        email="leitung@kita.de",
+                        hashed_password=get_password_hash("leitung123"),
+                        full_name="Kita-Leitung",
+                        role=UserRole.LEITUNG,
+                        weekly_hours=30,
+                        additional_hours=14.1875,
+                        work_days_per_week=5,
+                        vacation_days_per_year=32
+                    )
+                    db.add(leitung_user)
+                    db.commit()
+                    logger.info("Default leitung user created: leitung / leitung123")
+                else:
+                    logger.info("Leitung user already exists")
+                    
+            finally:
+                db.close()
+            break
+            
+        except Exception as e:
+            retry_count += 1
+            logger.warning(f"Database connection attempt {retry_count}/{max_retries} failed: {e}")
+            if retry_count >= max_retries:
+                logger.error("Failed to connect to database after maximum retries")
+                raise
+            time.sleep(2)
 
 app = FastAPI(title="Kita Dienstplan API", version="1.0.0")
+
+@app.on_event("startup")
+async def startup_event():
+    """Initialize database on startup"""
+    init_database()
 
 # CORS Origins aus Environment Variable
 cors_origins = os.getenv("CORS_ORIGINS", "http://localhost:3000").split(",")
@@ -54,7 +126,10 @@ async def health_check():
 # Static Files (Frontend) - nur wenn static Ordner existiert
 static_dir = Path("static")
 if static_dir.exists():
-    app.mount("/static", StaticFiles(directory="static"), name="static")
+    # Mount the nested static directory for assets
+    nested_static = static_dir / "static"
+    if nested_static.exists():
+        app.mount("/static", StaticFiles(directory=str(nested_static)), name="static")
     
     # Frontend Routes - alle anderen Routen an React weiterleiten
     @app.get("/{full_path:path}")

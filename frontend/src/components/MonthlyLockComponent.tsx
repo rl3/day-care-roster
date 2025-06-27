@@ -1,60 +1,112 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import { useAuth } from '../contexts/AuthContext'
-import { Lock, Unlock, Calendar, AlertTriangle, CheckCircle } from 'lucide-react'
+import { Lock, Unlock, Calendar, AlertTriangle, CheckCircle, X } from 'lucide-react'
 import { format } from 'date-fns'
 import { de } from 'date-fns/locale'
 
 const MonthlyLockComponent: React.FC = () => {
-  const { user } = useAuth()
+  const { user, token } = useAuth()
   const [selectedYear, setSelectedYear] = useState(new Date().getFullYear())
   const [selectedMonth, setSelectedMonth] = useState(new Date().getMonth() + 1)
   const [isProcessing, setIsProcessing] = useState(false)
+  const [monthStatus, setMonthStatus] = useState<'open' | 'locked' | 'loading'>('loading')
+  const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null)
 
   const canLockMonths = user?.role === 'leitung' || user?.role === 'admin'
 
+  const API_BASE = import.meta.env.NODE_ENV === 'production' ? '' : 'http://localhost:8000'
+
+  const fetchMonthStatus = async () => {
+    if (!token) return
+    
+    try {
+      setMonthStatus('loading')
+      const response = await fetch(`${API_BASE}/api/monthly-locks/status/${selectedYear}/${selectedMonth}`, {
+        headers: { 'Authorization': `Bearer ${token}` }
+      })
+      
+      if (response.ok) {
+        const data = await response.json()
+        setMonthStatus(data.is_locked ? 'locked' : 'open')
+      } else {
+        setMonthStatus('open')
+      }
+    } catch (error) {
+      console.error('Error fetching month status:', error)
+      setMonthStatus('open')
+    }
+  }
+
+  useEffect(() => {
+    fetchMonthStatus()
+  }, [selectedYear, selectedMonth, token])
+
   const handleMonthLock = async () => {
-    if (!canLockMonths) return
+    if (!canLockMonths || !token) return
     
     const confirmMessage = `Möchten Sie den Monat ${format(new Date(selectedYear, selectedMonth - 1), 'MMMM yyyy', { locale: de })} wirklich abschließen?\n\nNach dem Abschluss können Fachkräfte ihre Zeiteinträge für diesen Monat nicht mehr bearbeiten.`
     
     if (!window.confirm(confirmMessage)) return
     
     setIsProcessing(true)
+    setMessage(null)
     
     try {
-      // TODO: API-Call für Monatsabschluss
-      console.log('Locking month:', selectedYear, selectedMonth)
+      const response = await fetch(`${API_BASE}/api/monthly-locks/`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({
+          year: selectedYear,
+          month: selectedMonth
+        })
+      })
       
-      // Simulation
-      await new Promise(resolve => setTimeout(resolve, 2000))
-      
-      alert(`Monat ${format(new Date(selectedYear, selectedMonth - 1), 'MMMM yyyy', { locale: de })} wurde erfolgreich abgeschlossen.`)
+      if (response.ok) {
+        const data = await response.json()
+        setMessage({ type: 'success', text: `Monat ${format(new Date(selectedYear, selectedMonth - 1), 'MMMM yyyy', { locale: de })} wurde erfolgreich abgeschlossen. ${data.locked_entries_count} Zeiteinträge wurden gesperrt.` })
+        setMonthStatus('locked')
+      } else {
+        const errorData = await response.json()
+        setMessage({ type: 'error', text: errorData.detail || 'Fehler beim Abschließen des Monats' })
+      }
     } catch (error) {
-      alert('Fehler beim Abschließen des Monats: ' + error)
+      setMessage({ type: 'error', text: 'Netzwerkfehler beim Abschließen des Monats' })
     } finally {
       setIsProcessing(false)
     }
   }
 
   const handleMonthUnlock = async () => {
-    if (!canLockMonths) return
+    if (!canLockMonths || !token || monthStatus !== 'locked') return
     
     const confirmMessage = `Möchten Sie den Monat ${format(new Date(selectedYear, selectedMonth - 1), 'MMMM yyyy', { locale: de })} wieder freigeben?\n\nFachkräfte können dann ihre Zeiteinträge wieder bearbeiten.`
     
     if (!window.confirm(confirmMessage)) return
     
     setIsProcessing(true)
+    setMessage(null)
     
     try {
-      // TODO: API-Call für Monatsfreigabe
-      console.log('Unlocking month:', selectedYear, selectedMonth)
+      const response = await fetch(`${API_BASE}/api/monthly-locks/${selectedYear}/${selectedMonth}`, {
+        method: 'DELETE',
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      })
       
-      // Simulation
-      await new Promise(resolve => setTimeout(resolve, 1000))
-      
-      alert(`Monat ${format(new Date(selectedYear, selectedMonth - 1), 'MMMM yyyy', { locale: de })} wurde wieder freigegeben.`)
+      if (response.ok) {
+        const data = await response.json()
+        setMessage({ type: 'success', text: `Monat ${format(new Date(selectedYear, selectedMonth - 1), 'MMMM yyyy', { locale: de })} wurde wieder freigegeben. ${data.unlocked_entries_count} Zeiteinträge sind wieder bearbeitbar.` })
+        setMonthStatus('open')
+      } else {
+        const errorData = await response.json()
+        setMessage({ type: 'error', text: errorData.detail || 'Fehler beim Freigeben des Monats' })
+      }
     } catch (error) {
-      alert('Fehler beim Freigeben des Monats: ' + error)
+      setMessage({ type: 'error', text: 'Netzwerkfehler beim Freigeben des Monats' })
     } finally {
       setIsProcessing(false)
     }
@@ -118,18 +170,58 @@ const MonthlyLockComponent: React.FC = () => {
         </div>
       </div>
 
+      {/* Message Display */}
+      {message && (
+        <div className={`border rounded-lg p-4 mb-6 ${
+          message.type === 'success' 
+            ? 'bg-green-50 border-green-200 text-green-800' 
+            : 'bg-red-50 border-red-200 text-red-800'
+        }`}>
+          <div className="flex items-start justify-between">
+            <p className="text-sm">{message.text}</p>
+            <button 
+              onClick={() => setMessage(null)}
+              className="text-gray-400 hover:text-gray-600"
+            >
+              <X className="h-4 w-4" />
+            </button>
+          </div>
+        </div>
+      )}
+
       {/* Ausgewählter Monat */}
-      <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
+      <div className={`border rounded-lg p-4 mb-6 ${
+        monthStatus === 'locked' 
+          ? 'bg-red-50 border-red-200' 
+          : monthStatus === 'open'
+          ? 'bg-green-50 border-green-200'
+          : 'bg-gray-50 border-gray-200'
+      }`}>
         <div className="flex items-center justify-between">
           <div>
-            <h3 className="font-medium text-blue-900">
+            <h3 className={`font-medium ${
+              monthStatus === 'locked' ? 'text-red-900' : 
+              monthStatus === 'open' ? 'text-green-900' : 'text-gray-900'
+            }`}>
               Ausgewählter Monat: {format(new Date(selectedYear, selectedMonth - 1), 'MMMM yyyy', { locale: de })}
             </h3>
-            <p className="text-sm text-blue-700">
-              Status: <span className="font-medium">Offen</span> {/* TODO: Echten Status abrufen */}
+            <p className={`text-sm ${
+              monthStatus === 'locked' ? 'text-red-700' : 
+              monthStatus === 'open' ? 'text-green-700' : 'text-gray-700'
+            }`}>
+              Status: <span className="font-medium">
+                {monthStatus === 'loading' ? 'Wird geladen...' :
+                 monthStatus === 'locked' ? 'Gesperrt' : 'Offen'}
+              </span>
             </p>
           </div>
-          <CheckCircle className="h-8 w-8 text-blue-600" />
+          {monthStatus === 'locked' ? (
+            <Lock className="h-8 w-8 text-red-600" />
+          ) : monthStatus === 'open' ? (
+            <CheckCircle className="h-8 w-8 text-green-600" />
+          ) : (
+            <Calendar className="h-8 w-8 text-gray-600" />
+          )}
         </div>
       </div>
 
@@ -137,7 +229,7 @@ const MonthlyLockComponent: React.FC = () => {
       <div className="flex gap-3">
         <button
           onClick={handleMonthLock}
-          disabled={isProcessing}
+          disabled={isProcessing || monthStatus === 'locked' || monthStatus === 'loading'}
           className="btn btn-primary flex items-center gap-2 disabled:opacity-50"
         >
           <Lock className="h-4 w-4" />
@@ -146,11 +238,11 @@ const MonthlyLockComponent: React.FC = () => {
 
         <button
           onClick={handleMonthUnlock}
-          disabled={isProcessing}
+          disabled={isProcessing || monthStatus === 'open' || monthStatus === 'loading'}
           className="btn btn-secondary flex items-center gap-2 disabled:opacity-50"
         >
           <Unlock className="h-4 w-4" />
-          Monat freigeben
+          {isProcessing ? 'Gebe frei...' : 'Monat freigeben'}
         </button>
       </div>
 

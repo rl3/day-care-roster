@@ -43,8 +43,7 @@ class PushNotification(Base):
     success_count = Column(Integer, default=0)
     failure_count = Column(Integer, default=0)
 
-# Tabellen erstellen
-Base.metadata.create_all(bind=engine)
+# Note: Tables are created in main.py startup event
 
 # Pydantic Models
 class PushSubscriptionRequest(BaseModel):

@@ -1,5 +1,5 @@
 # Multi-stage Dockerfile für Production Deployment
-FROM node:18-alpine as frontend-build
+FROM node:18-alpine AS frontend-build
 
 WORKDIR /app/frontend
 
@@ -19,6 +19,7 @@ WORKDIR /app
 # System Dependencies
 RUN apt-get update && apt-get install -y \
     gcc \
+    curl \
     && rm -rf /var/lib/apt/lists/*
 
 # Python Dependencies

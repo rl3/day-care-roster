@@ -43,7 +43,7 @@
 - **Monitoring**: Umfassende Logging und Error-Tracking
 
 ## v1.0.1 - User Neutralisierung
-- **Geändert**: Benutzer 'judith' zu 'leitung' umbenannt für neutrale Bezeichnung
+- **Geändert**: Benutzer 'xxxxx' zu 'leitung' umbenannt für neutrale Bezeichnung
 - **Benutzer**: `leitung` / `leitung123` (Rolle: Leitung)
 - **Konfiguration**: Schnellkonfiguration-Presets in UserForm neutralisiert
 - **Dokumentation**: Alle READMEs und Deployment-Guides aktualisiert

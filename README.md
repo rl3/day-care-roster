@@ -4,22 +4,34 @@ Eine vollständige Client/Server-Anwendung für die Dienstplanung in Kindertages
 
 ## 🚀 Schnellstart
 
+### 1. Environment konfigurieren
 ```bash
-# Anwendung starten
-docker-compose up --build
-
-# Zugriff:
-# Frontend: http://localhost:3000
-# Backend API: http://localhost:8000
-# API Dokumentation: http://localhost:8000/docs
+# .env-Datei erstellen
+cp .env.example .env
+# Optional: Passwörter in .env anpassen
 ```
 
-## 👥 Test-Benutzer
+### 2. Anwendung starten
+```bash
+# Alle Services starten
+docker-compose up --build
 
+# Oder im Hintergrund
+docker-compose up --build -d
+```
+
+### 3. Zugriff
+- **Frontend**: http://localhost:3000
+- **Backend API**: http://localhost:8000
+- **API Dokumentation**: http://localhost:8000/docs
+
+### 4. Login
 Die folgenden Benutzer wurden automatisch erstellt:
 
 - **Admin**: `admin` / `admin123` (Vollzugriff)
 - **Leitung**: `leitung` / `leitung123` (Alle Mitarbeiter einsehen)
+
+> 📖 **Detaillierte Datenbank-Setup-Anleitung**: [DATABASE_SETUP.md](DATABASE_SETUP.md)
 
 ## 📋 Funktionsumfang
 
@@ -33,7 +45,7 @@ Die folgenden Benutzer wurden automatisch erstellt:
 - **Responsive Frontend** optimiert für 80% Smartphone-Nutzung
 
 #### 📊 Datenbankmodelle & APIs
-- **User-Management** mit Arbeitszeit-Konfiguration
+- **User-Management** mit Arbeitszeit-Konfiguration und Löschfunktion
 - **Zeiterfassung** (Arbeitszeit, Krankheit, Urlaub, etc.) + API
 - **Kinderanzahl-Erfassung** je Zeitslot + vollständige API
 - **Globale Events** (Schließtage, frühere Betriebsschlüsse) + API
@@ -48,7 +60,7 @@ Die folgenden Benutzer wurden automatisch erstellt:
   - Jahresstatistiken pro Mitarbeiter
   - Fachkraft-Kind-Schlüssel Berechnungen
   - Rollenbasierte Filterung
-- **Benutzerverwaltung UI** mit Schnellkonfiguration für alle Mitarbeiter
+- **Benutzerverwaltung UI** mit Erstellen, Bearbeiten und Löschen von Mitarbeitern
 - **Kinderanzahl-Erfassung** mit automatischer Bedarfsberechnung
 - **Monatsabschluss-Funktionalität** für Leitung/Admin
 
@@ -69,10 +81,11 @@ Die folgenden Benutzer wurden automatisch erstellt:
 
 ### Backend (Python)
 - **FastAPI** für REST API
-- **SQLAlchemy** ORM mit MySQL
-- **JWT** Authentifizierung
+- **SQLAlchemy** ORM mit MySQL 8.0
+- **PyMySQL** Database Driver
+- **JWT** Authentifizierung mit bcrypt
 - **Pydantic** Datenvalidierung
-- **Alembic** Datenbankmigrationen
+- **Automatische Datenbankinitialisierung**
 
 ### Frontend (TypeScript/React)
 - **React 18** mit TypeScript
@@ -83,9 +96,10 @@ Die folgenden Benutzer wurden automatisch erstellt:
 - **PWA** Support
 
 ### Infrastruktur
-- **Docker Compose** für lokale Entwicklung
-- **MySQL 8.0** Datenbank
-- **CORS** konfiguriert
+- **Docker Compose** mit Health Checks
+- **MySQL 8.0** Primary Database
+- **Automatische Datenbankinitialisierung**
+- **Environment-basierte Konfiguration**
 - **Hot-Reload** für Entwicklung
 
 ## 📱 Mobile Optimierung
@@ -148,7 +162,7 @@ Die vollständige API-Dokumentation ist verfügbar unter: `http://localhost:8000
 
 ### Implementierte APIs:
 - `/api/auth/` - Authentifizierung (Login, Token-Refresh)
-- `/api/users/` - Benutzerverwaltung (CRUD, Rollen)
+- `/api/users/` - Benutzerverwaltung (CRUD, Rollen, Löschen mit Sicherheitscheck)
 - `/api/time-entries/` - Zeiterfassung (CRUD, Validierung)
 - `/api/statistics/` - Auswertungen (Wochen/Monat/Jahr)
 - `/api/child-counts/` - Kinderanzahl (CRUD, Bedarfsberechnung)
