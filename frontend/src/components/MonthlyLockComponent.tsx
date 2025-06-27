@@ -169,17 +169,6 @@ const MonthlyLockComponent: React.FC = () => {
           </div>
         </div>
       </div>
-
-      {/* TODO-Liste für echte Implementierung */}
-      <div className="mt-6 bg-gray-50 border border-gray-200 rounded-lg p-4">
-        <h4 className="font-medium text-gray-900 mb-2">Noch zu implementieren (Backend)</h4>
-        <ul className="text-sm text-gray-600 space-y-1">
-          <li>• API-Endpoint für Monatsabschluss (POST /api/monthly-locks/)</li>
-          <li>• API-Endpoint für Monatsfreigabe (DELETE /api/monthly-locks/{'{id}'})</li>
-          <li>• Status-Abfrage für bestehende Monatsabschlüsse</li>
-          <li>• Automatische Sperrung von Zeiteinträgen nach Abschluss</li>
-        </ul>
-      </div>
     </div>
   )
 }
